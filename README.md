@@ -1,79 +1,93 @@
-# entra-access-review-control-plane
+# Entra Access Review Control Plane
 
-Operator control plane for **Microsoft Entra (Azure AD)** access reviews. Reads [Microsoft Graph access-reviews API](https://learn.microsoft.com/en-us/graph/api/resources/accessreviewinstancedecisionitem) JSON exports and surfaces the things that hurt an audit:
+[![CI](https://github.com/mizcausevic-dev/entra-access-review-control-plane/actions/workflows/ci.yml/badge.svg)](https://github.com/mizcausevic-dev/entra-access-review-control-plane/actions/workflows/ci.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](./LICENSE)
+[![Deploy](https://github.com/mizcausevic-dev/entra-access-review-control-plane/actions/workflows/pages.yml/badge.svg)](https://github.com/mizcausevic-dev/entra-access-review-control-plane/actions/workflows/pages.yml)
 
-- 🔴 **Privileged-role auto-approvals** — approve with no recorded reviewer on Global Admin / Privileged Role Admin / Security Admin / etc.
-- 🔴 **Self-reviews on privileged roles** — reviewer id equals principal id on a Global Admin–class role.
-- 🔴 **Instance overdue** — instance is past its `endDateTime` by more than the configured grace window and still `InProgress`.
-- 🟠 **Decision overdue** — principal-level decision still `notReviewed` / `notNotified` after the instance closed.
-- 🟠 **Stale decision** — `reviewedDateTime` set, but `appliedDateTime` never set, > N days later.
-- ℹ️  **High-risk-principal** — every privileged-role decision is surfaced for the dashboard.
+Operator control plane for Microsoft Entra access reviews, privileged-role decisions, stale approvals, and identity-governance remediation posture.
 
-> Status: v0.1.0 — Node 20/22 supported, library + CLI. Cloud Identity lane (Wave 11).
+## Why this exists
 
-## CLI
+- Enterprise teams need more than a raw Microsoft Graph export when audits, access reviews, and remediation timing collide.
+- Access-review operators need one surface that shows overdue privileged decisions, self-reviews, auto-approvals, stale-but-not-applied changes, and review ownership.
+- Recruiters and buyers looking for `Azure / Microsoft 365 / Entra / Intune` proof should see an admin/operator dashboard, not a cloud tutorial.
+- Identity governance work is most valuable when it becomes a visible release and remediation system for platform, security, and audit teams.
 
-```
-npx entra-access-review <export.json>
-    [--format json|markdown|summary]
-    [--now <iso>]
-    [--overdue-after-days 14]
-    [--stale-after-days 30]
-    [--fail-on-high]
-    [--out FILE]
-```
+## Why this matters (KG Embedded tie-back)
 
-Input is any of:
-- A single `accessReviewInstance` object
-- An array of instances
-- A standard Microsoft Graph collection envelope: `{ "value": [ ... ] }`
+This repo demonstrates the identity-governance control-plane primitive for Microsoft tenant operations: access reviews, privileged-role risk, stale application posture, and buyer-readable remediation packets in one operator surface. Kinetic Gain Embedded extends this pattern into productized in-app dashboards where security, audit, and platform signals need to be visible without exposing unsafe write paths or tenant secrets. See [kineticgain.com/embedded](https://kineticgain.com/embedded).
 
-Exit code:
-- `0` — no high findings (or `--fail-on-high` not set)
-- `1` — high finding present AND `--fail-on-high` set
-- `2` — usage / I/O error
+## What it shows
 
-## Capturing the input
+- review-lane visibility for Entra access-review instances and ownership
+- privileged-role risk detection using Microsoft role template ids
+- stale decision and overdue closeout posture
+- remediation packets for privileged access, guest access, and app-consent review flows
+- offline-safe analysis of captured Microsoft Graph exports
 
-You can capture the JSON the CLI expects with the Graph CLI / REST. Example using `az rest`:
+## Routes
 
-```bash
-az rest --method GET \
-  --uri "https://graph.microsoft.com/v1.0/identityGovernance/accessReviews/definitions/{definitionId}/instances?\$expand=decisions" \
-  --headers "ConsistencyLevel=eventual" \
-  > reviews.json
-```
+- `/`
+- `/review-lane`
+- `/access-risks`
+- `/remediation-posture`
+- `/verification`
+- `/docs`
 
-(no credentials are stored in this repo; the tool runs offline against the captured JSON.)
+## API
 
-## Library
+- `/api/dashboard/summary`
+- `/api/review-lane`
+- `/api/access-risks`
+- `/api/remediation-posture`
+- `/api/verification`
+- `/api/sample`
 
-```ts
-import { analyze, toMarkdown } from "entra-access-review-control-plane";
+## Screenshots
 
-const report = analyze(payload, {
-  overdueAfterDays: 14,
-  staleAfterDays: 30
-});
+![Overview](./screenshots/01-overview-proof.png)
+![Review lane](./screenshots/02-review-lane-proof.png)
+![Access risks](./screenshots/03-access-risks-proof.png)
+![Remediation posture](./screenshots/04-remediation-posture-proof.png)
 
-if (!report.ok) {
-  console.error(`${report.findings.filter(f => f.severity === "high").length} high findings`);
-}
-console.log(toMarkdown(report));
-```
+## Local Development
 
-## Privileged role coverage
-
-The bundled `PRIVILEGED_ROLE_TEMPLATE_IDS` set covers Microsoft's high-blast-radius built-in role template ids — Global Admin, Privileged Role Admin, Security Admin, SharePoint Admin, Exchange Admin, Helpdesk Admin (password reset surface), User Admin, Password Admin. Extend it for your tenant's custom directory roles.
-
-## Develop
-
-```
+```powershell
+cd entra-access-review-control-plane
 npm install
-npm run lint && npm run typecheck && npm run coverage && npm run build
-npm run demo
+npm run dev
 ```
 
-## License
+Open:
+- [http://127.0.0.1:5511/](http://127.0.0.1:5511/)
+- [http://127.0.0.1:5511/review-lane](http://127.0.0.1:5511/review-lane)
+- [http://127.0.0.1:5511/access-risks](http://127.0.0.1:5511/access-risks)
+- [http://127.0.0.1:5511/remediation-posture](http://127.0.0.1:5511/remediation-posture)
+- [http://127.0.0.1:5511/verification](http://127.0.0.1:5511/verification)
 
-[AGPL-3.0-or-later](LICENSE)
+## Validation
+
+- `npm run lint`
+- `npm run typecheck`
+- `npm run coverage`
+- `npm run build`
+- `npm run demo`
+- `npm run smoke`
+- `npm run prerender`
+- `npm run render:assets`
+
+## Production status
+
+| Aspect | Status |
+|--------|--------|
+| CI | Node 20 + 22 matrix — lint · typecheck · coverage · build · demo · smoke · `npm audit` |
+| License | [AGPL-3.0-or-later](./LICENSE) |
+| Deploy | Static prerender -> **https://entra.kineticgain.com/** |
+| Data posture | Synthetic sample data only; no tenant credentials or live Graph tokens |
+
+## Docs
+
+- [Architecture](./docs/architecture.md)
+- [Origin](./docs/ORIGIN.md)
+- [Kinetic Gain Embedded tie-back](./docs/KINETIC_GAIN_EMBEDDED.md)
+- [Changelog](./CHANGELOG.md)

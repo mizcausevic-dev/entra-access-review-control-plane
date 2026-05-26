@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import {
   PRIVILEGED_ROLE_TEMPLATE_IDS,
   type AccessReviewDecision,
@@ -32,26 +34,32 @@ const INSTANCE_STATUSES: InstanceStatus[] = [
 
 function emptyDecisionCounts(): Record<DecisionState, number> {
   const out = {} as Record<DecisionState, number>;
-  for (const s of DECISION_STATES) out[s] = 0;
+  for (const state of DECISION_STATES) {
+    out[state] = 0;
+  }
   return out;
 }
 
 function emptyInstanceCounts(): Record<InstanceStatus, number> {
   const out = {} as Record<InstanceStatus, number>;
-  for (const s of INSTANCE_STATUSES) out[s] = 0;
+  for (const state of INSTANCE_STATUSES) {
+    out[state] = 0;
+  }
   return out;
 }
 
-/** Normalize the three accepted input shapes into a flat instance array. */
 export function normalizeInput(input: ReviewInput): AccessReviewInstance[] {
-  if (Array.isArray(input)) return input;
+  if (Array.isArray(input)) {
+    return input;
+  }
+
   if ("value" in input && Array.isArray((input as { value: AccessReviewInstance[] }).value)) {
     return (input as { value: AccessReviewInstance[] }).value;
   }
+
   return [input as AccessReviewInstance];
 }
 
-/** Run all rules against the input and produce a control-plane report. */
 export function analyze(input: ReviewInput, opts: ControlPlaneOptions = {}): ControlPlaneReport {
   const now = opts.now ? new Date(opts.now) : new Date();
   const overdueAfter = (opts.overdueAfterDays ?? 14) * DAY_MS;
@@ -64,104 +72,107 @@ export function analyze(input: ReviewInput, opts: ControlPlaneOptions = {}): Con
   let totalDecisions = 0;
   let openPrivilegedDecisions = 0;
 
-  for (const inst of instances) {
-    if (inst.status in instancesByStatus) instancesByStatus[inst.status] += 1;
+  for (const instance of instances) {
+    if (instance.status in instancesByStatus) {
+      instancesByStatus[instance.status] += 1;
+    }
 
-    const endDate = new Date(inst.endDateTime);
+    const endDate = new Date(instance.endDateTime);
     const overdueByMs = now.getTime() - endDate.getTime();
-    if (inst.status !== "Completed" && inst.status !== "Auto-Reviewed" && overdueByMs > 0) {
+
+    if (instance.status !== "Completed" && instance.status !== "Auto-Reviewed" && overdueByMs > 0) {
       findings.push({
         code: "instance-overdue",
         severity: overdueByMs > overdueAfter ? "high" : "medium",
-        message: `Access review instance closed ${Math.round(overdueByMs / DAY_MS)} day(s) ago and still ${inst.status}.`,
-        instanceId: inst.id
+        message: `Access review instance closed ${Math.round(overdueByMs / DAY_MS)} day(s) ago and still ${instance.status}.`,
+        instanceId: instance.id
       });
     }
 
-    for (const d of inst.decisions ?? []) {
+    for (const decision of instance.decisions ?? []) {
       totalDecisions += 1;
-      if (d.decision in decisionsByState) decisionsByState[d.decision] += 1;
+      if (decision.decision in decisionsByState) {
+        decisionsByState[decision.decision] += 1;
+      }
 
       const isPrivileged =
-        d.resource.type === "role" &&
-        d.resource.roleTemplateId !== undefined &&
-        PRIVILEGED_ROLE_TEMPLATE_IDS.has(d.resource.roleTemplateId);
+        decision.resource.type === "role" &&
+        decision.resource.roleTemplateId !== undefined &&
+        PRIVILEGED_ROLE_TEMPLATE_IDS.has(decision.resource.roleTemplateId);
 
-      const isOpen = d.decision === "notReviewed" || d.decision === "notNotified";
-      if (isOpen && isPrivileged) openPrivilegedDecisions += 1;
+      const isOpen = decision.decision === "notReviewed" || decision.decision === "notNotified";
+      if (isOpen && isPrivileged) {
+        openPrivilegedDecisions += 1;
+      }
 
       if (isOpen && overdueByMs > overdueAfter) {
         findings.push({
           code: "decision-overdue",
           severity: isPrivileged ? "high" : "medium",
-          message: `Decision pending for ${d.principal.displayName ?? d.principal.id} on ${d.resource.displayName ?? d.resource.id}.`,
-          instanceId: inst.id,
-          decisionId: d.id,
-          principal: d.principal.userPrincipalName ?? d.principal.id,
-          resource: d.resource.displayName ?? d.resource.id
+          message: `Decision pending for ${decision.principal.displayName ?? decision.principal.id} on ${decision.resource.displayName ?? decision.resource.id}.`,
+          instanceId: instance.id,
+          decisionId: decision.id,
+          principal: decision.principal.userPrincipalName ?? decision.principal.id,
+          resource: decision.resource.displayName ?? decision.resource.id
         });
       }
 
-      if (isPrivileged && d.decision === "approve" && d.reviewedBy === undefined) {
+      if (isPrivileged && decision.decision === "approve" && decision.reviewedBy === undefined) {
         findings.push({
           code: "privileged-role-auto-approved",
           severity: "high",
-          message: `Privileged role decision approved with no recorded reviewer (likely auto-approval).`,
-          instanceId: inst.id,
-          decisionId: d.id,
-          principal: d.principal.userPrincipalName ?? d.principal.id,
-          resource: d.resource.displayName ?? d.resource.id
+          message: "Privileged role decision approved with no recorded reviewer (likely auto-approval).",
+          instanceId: instance.id,
+          decisionId: decision.id,
+          principal: decision.principal.userPrincipalName ?? decision.principal.id,
+          resource: decision.resource.displayName ?? decision.resource.id
         });
       }
 
       if (
-        d.reviewedBy?.id &&
-        d.principal.type === "user" &&
-        d.reviewedBy.id === d.principal.id
+        decision.reviewedBy?.id &&
+        decision.principal.type === "user" &&
+        decision.reviewedBy.id === decision.principal.id
       ) {
         findings.push({
           code: "reviewer-self-review",
           severity: isPrivileged ? "high" : "medium",
-          message: `Reviewer ${d.reviewedBy.displayName ?? d.reviewedBy.id} approved/denied their own access.`,
-          instanceId: inst.id,
-          decisionId: d.id,
-          principal: d.principal.userPrincipalName ?? d.principal.id,
-          resource: d.resource.displayName ?? d.resource.id
+          message: `Reviewer ${decision.reviewedBy.displayName ?? decision.reviewedBy.id} approved or denied their own access.`,
+          instanceId: instance.id,
+          decisionId: decision.id,
+          principal: decision.principal.userPrincipalName ?? decision.principal.id,
+          resource: decision.resource.displayName ?? decision.resource.id
         });
       }
 
-      if (d.reviewedDateTime && !d.appliedDateTime) {
-        const reviewedAgeMs = now.getTime() - new Date(d.reviewedDateTime).getTime();
+      if (decision.reviewedDateTime && !decision.appliedDateTime) {
+        const reviewedAgeMs = now.getTime() - new Date(decision.reviewedDateTime).getTime();
         if (reviewedAgeMs > staleAfter) {
           findings.push({
             code: "stale-decision",
             severity: "medium",
             message: `Decision reviewed ${Math.round(reviewedAgeMs / DAY_MS)} day(s) ago but never applied.`,
-            instanceId: inst.id,
-            decisionId: d.id,
-            principal: d.principal.userPrincipalName ?? d.principal.id,
-            resource: d.resource.displayName ?? d.resource.id
+            instanceId: instance.id,
+            decisionId: decision.id,
+            principal: decision.principal.userPrincipalName ?? decision.principal.id,
+            resource: decision.resource.displayName ?? decision.resource.id
           });
         }
       }
 
-      if (isPrivileged && (d.principal.type === "user" || d.principal.type === undefined)) {
-        // Informational signal — surfaces every privileged-role decision so the operator
-        // can scan them on the dashboard even when there's no rule violation.
+      if (isPrivileged && (decision.principal.type === "user" || decision.principal.type === undefined)) {
         findings.push({
           code: "high-risk-principal",
           severity: "info",
-          message: `Privileged role assignment under review (${d.resource.displayName ?? d.resource.roleTemplateId}).`,
-          instanceId: inst.id,
-          decisionId: d.id,
-          principal: d.principal.userPrincipalName ?? d.principal.id,
-          resource: d.resource.displayName ?? d.resource.id
+          message: `Privileged role assignment under review (${decision.resource.displayName ?? decision.resource.roleTemplateId}).`,
+          instanceId: instance.id,
+          decisionId: decision.id,
+          principal: decision.principal.userPrincipalName ?? decision.principal.id,
+          resource: decision.resource.displayName ?? decision.resource.id
         });
       }
     }
   }
-
-  const ok = !findings.some((f) => f.severity === "high");
 
   return {
     generatedAt: now.toISOString(),
@@ -171,11 +182,10 @@ export function analyze(input: ReviewInput, opts: ControlPlaneOptions = {}): Con
     instancesByStatus,
     openPrivilegedDecisions,
     findings,
-    ok
+    ok: !findings.some((finding) => finding.severity === "high")
   };
 }
 
-/** Convenience overload for an already-flattened decision array. */
 export function analyzeDecisions(
   instanceId: string,
   status: InstanceStatus,

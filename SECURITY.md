@@ -1,8 +1,19 @@
 # Security Policy
 
-`entra-access-review-control-plane` is a pure-transform library and CLI: it reads JSON access-review exports from Microsoft Graph (or synthetic data) and emits a structured findings report. No network listener, no remote fetch, no Graph token storage, no execution of user-supplied code.
+`entra-access-review-control-plane` includes:
 
-The input file may contain principal identifiers (UPNs, object ids) that are sensitive in your tenant. The report includes UPNs in finding rows — be deliberate about where you store the input and the output.
+- an offline analyzer and CLI for Microsoft Graph access-review exports
+- a local Express operator surface for synthetic demo rendering
+- a static GitHub Pages build for the public demo
+
+The repo does **not** require live Graph tokens or tenant credentials for the shipped public surface.
+
+## Data handling
+
+- Treat real Microsoft Graph review exports as sensitive tenant data.
+- Principal identifiers, reviewer identifiers, and role names can all be operationally sensitive.
+- The public repo ships **synthetic sample data only**.
+- Do not commit live tenant exports, tokens, or screenshots containing real admin identities.
 
 ## Supported versions
 
