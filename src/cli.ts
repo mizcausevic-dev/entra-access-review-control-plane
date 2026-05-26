@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { readFileSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
@@ -23,20 +25,31 @@ const FORMATS: Format[] = ["json", "markdown", "summary"];
 
 function parseArgs(argv: string[]): Args {
   const args: Args = { format: "json", failOnHigh: false, help: false };
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a === "-h" || a === "--help") args.help = true;
-    else if (a === "--format") {
-      const v = argv[++i] as Format;
-      if (!FORMATS.includes(v)) throw new Error(`--format must be one of: ${FORMATS.join(", ")}`);
-      args.format = v;
-    } else if (a === "--now") args.now = argv[++i];
-    else if (a === "--overdue-after-days") args.overdueAfterDays = Number(argv[++i]);
-    else if (a === "--stale-after-days") args.staleAfterDays = Number(argv[++i]);
-    else if (a === "--fail-on-high") args.failOnHigh = true;
-    else if (a === "--out") args.out = argv[++i];
-    else if (!a.startsWith("-")) args.input = a;
-    else throw new Error(`Unknown option: ${a}`);
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "-h" || arg === "--help") {
+      args.help = true;
+    } else if (arg === "--format") {
+      const value = argv[++index] as Format;
+      if (!FORMATS.includes(value)) {
+        throw new Error(`--format must be one of: ${FORMATS.join(", ")}`);
+      }
+      args.format = value;
+    } else if (arg === "--now") {
+      args.now = argv[++index];
+    } else if (arg === "--overdue-after-days") {
+      args.overdueAfterDays = Number(argv[++index]);
+    } else if (arg === "--stale-after-days") {
+      args.staleAfterDays = Number(argv[++index]);
+    } else if (arg === "--fail-on-high") {
+      args.failOnHigh = true;
+    } else if (arg === "--out") {
+      args.out = argv[++index];
+    } else if (!arg.startsWith("-")) {
+      args.input = arg;
+    } else {
+      throw new Error(`Unknown option: ${arg}`);
+    }
   }
   return args;
 }
@@ -55,10 +68,10 @@ Input:
 
 Findings:
   - high     privileged-role decision auto-approved with no reviewer; reviewer
-             self-review on a privileged role; instance overdue > N days.
+             self-review on a privileged role; instance overdue beyond threshold
   - medium   decision-overdue, reviewer-self-review on a standard role,
-             stale-decision (reviewed but never applied).
-  - info     high-risk-principal — every privileged-role decision is surfaced.
+             stale-decision (reviewed but never applied)
+  - info     high-risk-principal — every privileged-role decision is surfaced
 
 Exit code:
   0 — no high-severity findings (or --fail-on-high not set)
@@ -69,10 +82,11 @@ export function run(argv: string[]): number {
   let args: Args;
   try {
     args = parseArgs(argv);
-  } catch (e) {
-    process.stderr.write(`${(e as Error).message}\n`);
+  } catch (error) {
+    process.stderr.write(`${(error as Error).message}\n`);
     return 2;
   }
+
   if (args.help || !args.input) {
     process.stdout.write(`${HELP}\n`);
     return args.help ? 0 : 2;
@@ -81,28 +95,37 @@ export function run(argv: string[]): number {
   let payload: ReviewInput;
   try {
     payload = JSON.parse(readFileSync(args.input, "utf8")) as ReviewInput;
-  } catch (e) {
-    process.stderr.write(`error reading input: ${(e as Error).message}\n`);
+  } catch (error) {
+    process.stderr.write(`error reading input: ${(error as Error).message}\n`);
     return 2;
   }
 
-  const opts: ControlPlaneOptions = {};
-  if (args.now) opts.now = args.now;
-  if (args.overdueAfterDays !== undefined) opts.overdueAfterDays = args.overdueAfterDays;
-  if (args.staleAfterDays !== undefined) opts.staleAfterDays = args.staleAfterDays;
+  const options: ControlPlaneOptions = {};
+  if (args.now) {
+    options.now = args.now;
+  }
+  if (args.overdueAfterDays !== undefined) {
+    options.overdueAfterDays = args.overdueAfterDays;
+  }
+  if (args.staleAfterDays !== undefined) {
+    options.staleAfterDays = args.staleAfterDays;
+  }
 
-  const report = analyze(payload, opts);
+  const report = analyze(payload, options);
+  const output =
+    args.format === "json"
+      ? JSON.stringify(report, null, 2)
+      : args.format === "markdown"
+        ? toMarkdown(report)
+        : toSummary(report);
 
-  let out: string;
-  if (args.format === "json") out = JSON.stringify(report, null, 2);
-  else if (args.format === "markdown") out = toMarkdown(report);
-  else out = toSummary(report);
+  if (args.out) {
+    writeFileSync(args.out, `${output}\n`, "utf8");
+  } else {
+    process.stdout.write(`${output}\n`);
+  }
 
-  if (args.out) writeFileSync(args.out, `${out}\n`, "utf8");
-  else process.stdout.write(`${out}\n`);
-
-  if (args.failOnHigh && !report.ok) return 1;
-  return 0;
+  return args.failOnHigh && !report.ok ? 1 : 0;
 }
 
 const invokedDirectly =
@@ -112,8 +135,8 @@ const invokedDirectly =
 if (invokedDirectly) {
   try {
     process.exit(run(process.argv.slice(2)));
-  } catch (e) {
-    process.stderr.write(`fatal: ${(e as Error).message}\n`);
+  } catch (error) {
+    process.stderr.write(`fatal: ${(error as Error).message}\n`);
     process.exit(2);
   }
 }
