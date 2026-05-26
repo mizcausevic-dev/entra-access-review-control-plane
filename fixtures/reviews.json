@@ -1,0 +1,81 @@
+{
+  "value": [
+    {
+      "id": "instance-2026-05-01",
+      "reviewName": "Global Admins Q2 review",
+      "startDateTime": "2026-05-01T00:00:00Z",
+      "endDateTime": "2026-05-15T00:00:00Z",
+      "status": "InProgress",
+      "decisions": [
+        {
+          "id": "dec-1",
+          "principal": {
+            "id": "u-alice",
+            "displayName": "Alice Admin",
+            "userPrincipalName": "alice@example.com",
+            "type": "user"
+          },
+          "resource": {
+            "id": "role-ga",
+            "displayName": "Global Administrator",
+            "type": "role",
+            "roleTemplateId": "62e90394-69f5-4237-9190-012177145e10"
+          },
+          "decision": "notReviewed"
+        },
+        {
+          "id": "dec-2",
+          "principal": {
+            "id": "u-bob",
+            "displayName": "Bob Manager",
+            "userPrincipalName": "bob@example.com",
+            "type": "user"
+          },
+          "resource": {
+            "id": "role-secadmin",
+            "displayName": "Security Administrator",
+            "type": "role",
+            "roleTemplateId": "194ae4cb-b126-40b2-bd5b-6091b380977d"
+          },
+          "decision": "approve",
+          "reviewedDateTime": "2026-05-10T12:00:00Z"
+        },
+        {
+          "id": "dec-3",
+          "principal": {
+            "id": "u-carol",
+            "displayName": "Carol Helpdesk",
+            "userPrincipalName": "carol@example.com",
+            "type": "user"
+          },
+          "resource": {
+            "id": "role-helpdesk",
+            "displayName": "Helpdesk Administrator",
+            "type": "role",
+            "roleTemplateId": "729827e3-9c14-49f7-bb1b-9608f156bbb8"
+          },
+          "decision": "approve",
+          "reviewedBy": { "id": "u-carol", "displayName": "Carol Helpdesk" },
+          "reviewedDateTime": "2026-05-09T09:00:00Z"
+        },
+        {
+          "id": "dec-4",
+          "principal": {
+            "id": "u-dave",
+            "displayName": "Dave Engineer",
+            "userPrincipalName": "dave@example.com",
+            "type": "user"
+          },
+          "resource": {
+            "id": "group-finance",
+            "displayName": "Finance Reports",
+            "type": "group"
+          },
+          "decision": "approve",
+          "reviewedBy": { "id": "u-elena", "displayName": "Elena Director" },
+          "reviewedDateTime": "2026-03-20T10:00:00Z"
+        }
+      ]
+    }
+  ]
+}

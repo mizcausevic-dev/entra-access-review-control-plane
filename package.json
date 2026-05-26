@@ -1,0 +1,62 @@
+{
+  "name": "entra-access-review-control-plane",
+  "version": "0.1.0",
+  "description": "Operator control plane for Microsoft Entra (Azure AD) access reviews. Reads Microsoft Graph access-reviews API JSON exports and surfaces overdue decisions, privileged-role auto-approvals, self-reviews, stale-but-not-applied decisions, and overdue instances. Library + CLI.",
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "author": "mizcausevic-dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mizcausevic-dev/entra-access-review-control-plane"
+  },
+  "keywords": [
+    "azure",
+    "microsoft-365",
+    "entra",
+    "azure-ad",
+    "identity-governance",
+    "access-review",
+    "privileged-access",
+    "platform-engineering",
+    "security-operations",
+    "typescript"
+  ],
+  "bin": {
+    "entra-access-review": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "demo": "tsx src/cli.ts fixtures/reviews-clean.json --now 2026-05-29T00:00:00Z --format summary",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^22.10.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "eslint": "^9.17.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.0",
+    "vitest": "^2.1.8"
+  }
+}
