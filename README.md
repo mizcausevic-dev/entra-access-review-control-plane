@@ -84,6 +84,7 @@ Open:
 | License | [AGPL-3.0-or-later](./LICENSE) |
 | Deploy | Static prerender -> **https://entra.kineticgain.com/** |
 | Data posture | Synthetic sample data only; no tenant credentials or live Graph tokens |
+| Suite | Part of the [Kinetic Gain Protocol Suite](https://suite.kineticgain.com/) operator portfolio · apex: [kineticgain.com](https://kineticgain.com) |
 
 ## Docs
 
