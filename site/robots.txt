@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://entra.kineticgain.com/sitemap.xml
