@@ -1,15 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-skin="bert-dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Entra Access Review Control Plane</title>
+    <title>Entra Access Review Control Plane · Kinetic Gain</title>
+    <meta name="theme-color" content="#0B0C10" />
+    <link rel="icon" href="/kg-favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/kg-theme-tokens.css" />
     <style>
       :root{
-        --bg:#070a0f; --panel:#0b1220; --panel2:#0a1426;
-        --line:rgba(120,255,170,.18); --line2:rgba(120,255,170,.10);
-        --text:#e9f3ff; --muted:rgba(233,243,255,.72); --muted2:rgba(233,243,255,.55);
-        --bert:#37ff8b; --bert2:#19c7ff;
+        /* bert-dark operator skin; --bert (accent) swapped green->cyan; state colors preserved */
+        --bg:#0B0C10; --panel:#1F2833; --panel2:#161D26;
+        --line:rgba(102,252,241,.18); --line2:rgba(102,252,241,.10);
+        --text:#C5C6C7; --muted:rgba(197,198,199,.72); --muted2:rgba(197,198,199,.55);
+        --bert:#66FCF1; --bert2:#45A29E;
         --warn:#ffcc66; --bad:#ff5c7a; --good:#37ff8b; --plum:#b88cff;
         --shadow: 0 18px 60px rgba(0,0,0,.55);
         --radius: 18px;
@@ -21,17 +27,17 @@
       body{
         margin:0; font-family:var(--sans); color:var(--text);
         background:
-          radial-gradient(1200px 600px at 20% -10%, rgba(55,255,139,.18), transparent 60%),
+          radial-gradient(1200px 600px at 20% -10%, rgba(102,252,241,.18), transparent 60%),
           radial-gradient(900px 520px at 90% 0%, rgba(25,199,255,.16), transparent 55%),
-          radial-gradient(1000px 600px at 50% 110%, rgba(55,255,139,.10), transparent 60%),
-          linear-gradient(180deg, #05070c 0%, #070a0f 35%, #05070c 100%);
+          radial-gradient(1000px 600px at 50% 110%, rgba(102,252,241,.10), transparent 60%),
+          linear-gradient(180deg, #080A0E 0%, #0B0C10 35%, #080A0E 100%);
         overflow-x:hidden;
       }
       .grid-bg{
         position:fixed; inset:0; pointer-events:none; opacity:.12; z-index:-1;
         background-image:
-          linear-gradient(to right, rgba(55,255,139,.14) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(55,255,139,.10) 1px, transparent 1px);
+          linear-gradient(to right, rgba(102,252,241,.14) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(102,252,241,.10) 1px, transparent 1px);
         background-size: 46px 46px;
         mask-image: radial-gradient(900px 600px at 40% 10%, #000 60%, transparent 100%);
       }
@@ -48,7 +54,7 @@
       .herorow{display:grid; grid-template-columns: 1.5fr .9fr; gap:18px}
       @media (max-width:1000px){.herorow{grid-template-columns:1fr}}
       .hero{
-        background: linear-gradient(180deg, rgba(11,18,32,.95), rgba(8,14,26,.92));
+        background: linear-gradient(180deg, rgba(31,40,51,.95), rgba(22,29,38,.92));
         border:1px solid var(--line); border-radius:22px; padding:28px 28px 24px;
         box-shadow: var(--shadow); position:relative; overflow:hidden;
         border-top:2px solid var(--bert2);
@@ -60,19 +66,19 @@
       .meta-chip{
         font-family:var(--mono); font-size:11px; color:var(--muted);
         padding:7px 12px; border-radius:999px; border:1px solid var(--line);
-        background:rgba(6,10,18,.4);
+        background:rgba(16,21,28,.4);
       }
       .navrow{display:flex; flex-wrap:wrap; gap:10px; margin-top:18px}
       .navchip{
         font-family:var(--mono); font-size:12px; color:var(--muted);
         padding:10px 14px; border-radius:999px; border:1px solid var(--line);
-        background:rgba(6,10,18,.4); text-decoration:none;
+        background:rgba(16,21,28,.4); text-decoration:none;
       }
       .navchip.active{color:#071017;background:linear-gradient(135deg,var(--bert),var(--bert2));font-weight:700}
       .side{display:flex; flex-direction:column; gap:14px}
       .bluf{
         border:1px solid var(--warn); border-left:4px solid var(--warn);
-        background: linear-gradient(180deg, rgba(255,204,102,.06), rgba(11,18,32,.92));
+        background: linear-gradient(180deg, rgba(255,204,102,.06), rgba(31,40,51,.92));
         border-radius:14px; padding:16px 18px;
       }
       .bluf .lbl, .corr .lbl{font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase}
@@ -80,7 +86,7 @@
       .bluf p, .corr p{color:var(--muted); font-size:13.5px; line-height:1.55; margin:6px 0 0}
       .corr{
         border:1px solid var(--bert); border-left:4px solid var(--bert);
-        background: linear-gradient(180deg, rgba(55,255,139,.06), rgba(11,18,32,.92));
+        background: linear-gradient(180deg, rgba(102,252,241,.06), rgba(31,40,51,.92));
         border-radius:14px; padding:16px 18px;
       }
       .section{margin-top:34px}
@@ -95,7 +101,7 @@
       @media (max-width:640px){.kpis{grid-template-columns: 1fr}}
       .kpi{
         border:1px solid var(--line); border-radius:14px; padding:14px 14px 12px;
-        background: linear-gradient(180deg, rgba(11,18,32,.85), rgba(8,14,26,.65));
+        background: linear-gradient(180deg, rgba(31,40,51,.85), rgba(22,29,38,.65));
         position:relative; overflow:hidden;
       }
       .kpi .v{font-family:var(--mono); font-size:26px; font-weight:600; letter-spacing:-.5px}
@@ -107,7 +113,7 @@
       @media (max-width:640px){.stack{grid-template-columns: 1fr}}
       .src{
         border:1px solid var(--line); border-radius:16px; padding:16px;
-        background: linear-gradient(180deg, rgba(11,18,32,.85), rgba(8,14,26,.65));
+        background: linear-gradient(180deg, rgba(31,40,51,.85), rgba(22,29,38,.65));
       }
       .src .src-name{font-family:var(--mono); font-size:11px; color:var(--bert); letter-spacing:.2em; text-transform:uppercase}
       .src .src-tit{margin:8px 0 6px; font-size:17px; font-weight:600}
@@ -119,9 +125,9 @@
       .ttbl th, .ttbl td{padding:13px 14px; text-align:left; font-size:13.5px; vertical-align:top}
       .ttbl thead th{
         font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
-        color:var(--muted2); border-bottom:1px solid var(--line); background:rgba(11,18,32,.5);
+        color:var(--muted2); border-bottom:1px solid var(--line); background:rgba(31,40,51,.5);
       }
-      .ttbl tbody tr:hover{background:rgba(55,255,139,.03)}
+      .ttbl tbody tr:hover{background:rgba(102,252,241,.03)}
       .ttbl td, .ttbl td *{color:var(--muted)}
       .ttbl b{color:var(--text)}
       .st{font-family:var(--mono); font-size:10px; padding:4px 9px; border-radius:6px; letter-spacing:.1em; text-transform:uppercase; border:1px solid currentColor; display:inline-block}
@@ -130,26 +136,29 @@
       @media (max-width:1000px){.board{grid-template-columns: 1fr}}
       .pcard{
         border:1px solid var(--line); border-radius:16px; padding:18px 20px;
-        background: linear-gradient(180deg, rgba(11,18,32,.85), rgba(8,14,26,.65));
+        background: linear-gradient(180deg, rgba(31,40,51,.85), rgba(22,29,38,.65));
         display:flex; flex-direction:column;
       }
       .pcard .ptop{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
       .pcard .pnum{font-family:var(--mono); font-size:22px; font-weight:600; color:var(--bert)}
-      .pcard .ppri{font-family:var(--mono); font-size:10px; padding:5px 10px; border-radius:999px; border:1px solid var(--line); color:var(--bert); letter-spacing:.14em; background:rgba(55,255,139,.06)}
+      .pcard .ppri{font-family:var(--mono); font-size:10px; padding:5px 10px; border-radius:999px; border:1px solid var(--line); color:var(--bert); letter-spacing:.14em; background:rgba(102,252,241,.06)}
       .pcard h3{margin:6px 0 8px; font-size:19px; font-weight:600}
       .pcard .pdesc{font-size:13.5px; color:var(--muted); line-height:1.55; margin:0 0 14px}
       .pcard ul.check{list-style:none; padding:0; margin:0 0 14px}
       .pcard ul.check li{display:grid; grid-template-columns: 18px 1fr; gap:10px; padding:6px 0; font-size:13.5px; color:var(--muted); line-height:1.45}
-      .pcard ul.check li:before{content:""; width:14px; height:14px; border:1px solid var(--line); border-radius:3px; background:rgba(6,10,18,.4); margin-top:3px;}
+      .pcard ul.check li:before{content:""; width:14px; height:14px; border:1px solid var(--line); border-radius:3px; background:rgba(16,21,28,.4); margin-top:3px;}
       .footer{
         margin-top:30px; padding-top:14px; border-top:1px dashed var(--line2);
         display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
         font-family:var(--mono); font-size:11px; color:var(--muted2); letter-spacing:.08em;
       }
-      .footer a{color:var(--bert2); text-decoration:none}
-      .footer a:hover{text-decoration:underline}
       a{color:inherit}
       code{font-family:var(--mono); font-size:12px; color:var(--bert2); background:rgba(25,199,255,.08); padding:1px 6px; border-radius:5px; border:1px solid rgba(25,199,255,.18);}
+      .kg-attest{display:inline-flex;align-items:center;gap:7px}
+      .kg-attest .dot{width:8px;height:8px;border-radius:50%;background:var(--kg-text-faint,#5D584E)}
+      .kg-attest[data-state="ok"] .dot{background:var(--kg-ok,#7E9B8E)}
+      .kg-attest[data-state="stale"] .dot{background:var(--kg-warn,#E0A43A)}
+      .kg-attest[data-state="fail"] .dot{background:var(--kg-danger,#C0492F)}
     </style>
   </head>
   <body>
@@ -208,16 +217,12 @@
           <div class="src"><div class="src-name">recruiter signal</div><div class="src-tit">Show Microsoft admin depth</div><p>This is a real Entra / Microsoft 365 governance surface, not a generic cloud keyword page.</p></div>
         </div>
       </section>
-      <div class="footer">
-        <div>entra-access-review-control-plane · synthetic sample data only</div>
-        <div>
-          <a href="https://github.com/mizcausevic-dev/entra-access-review-control-plane">GitHub</a> ·
-          <a href="https://portfolio.kineticgain.com/">Portfolio atlas</a> ·
-          <a href="https://kineticgain.com/">Kinetic Gain</a> ·
-          <a href="https://intune.kineticgain.com/">Intune surface</a> ·
-          <a href="https://okta.kineticgain.com/">Okta surface</a>
-        </div>
-      </div>
+      <footer class="footer">
+        <div class="kg-attest" data-kg-attest data-state=""><span class="dot"></span><span class="kg-attest-label">attestation: checking</span></div>
+        <div>entra-access-review-control-plane · synthetic sample data only · <a href="https://kineticgain.com">kineticgain.com</a></div>
+        <div>routes: / · /review-lane · /access-risks · /remediation-posture · /verification · /docs</div>
+      </footer>
     </div>
+    <script src="/kg-shell.js" defer></script>
   </body>
 </html>
