@@ -154,10 +154,13 @@
       a{color:inherit}
       code{font-family:var(--mono); font-size:12px; color:var(--bert2); background:rgba(25,199,255,.08); padding:1px 6px; border-radius:5px; border:1px solid rgba(25,199,255,.18);}
       .kg-attest{display:inline-flex;align-items:center;gap:7px}
-      .kg-attest .dot{width:8px;height:8px;border-radius:50%;background:var(--kg-text-faint,#5D584E)}
-      .kg-attest[data-state="ok"] .dot{background:var(--kg-ok,#7E9B8E)}
+      /* fallbacks match the bert-dark skin this page actually sets, so a
+         404 on kg-theme-tokens.css degrades to the right palette, not the
+         retired warm-ink one. */
+      .kg-attest .dot{width:8px;height:8px;border-radius:50%;background:var(--kg-text-faint,#8C98A2)}
+      .kg-attest[data-state="ok"] .dot{background:var(--kg-ok,#45A29E)}
       .kg-attest[data-state="stale"] .dot{background:var(--kg-warn,#E0A43A)}
-      .kg-attest[data-state="fail"] .dot{background:var(--kg-danger,#C0492F)}
+      .kg-attest[data-state="fail"] .dot{background:var(--kg-danger,#F2495C)}
     </style>
   </head>
   <body>

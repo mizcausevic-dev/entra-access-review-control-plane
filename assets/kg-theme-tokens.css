@@ -7,48 +7,71 @@
      <html data-skin="bert-dark">       operator / proof surfaces
 
    Because the names never change between skins, a subdomain swaps skins by
-   changing one attribute, and the theme gate (Task 3) checks one resolved
-   variable. Base palette values are skin-specific; everything DERIVED (tints,
+   changing one attribute, and the theme gate checks one resolved variable.
+   Base palette values are declared per skin; everything DERIVED (tints,
    hovers, lines) is computed once via color-mix from --kg-accent, so it adapts
-   to whichever skin is active without being redefined per skin.
+   to whichever skin is active without being redefined per skin. As of the
+   2026-08-20 retirement below, both skins declare the SAME values, so the
+   attribute currently changes nothing visually. That is intentional: the
+   estate runs one palette today, and the switch stays wired for the day it
+   does not.
 
-   Upstream: extracted and generalized from the apex /site/assets/tokens.css
-   warm-ink palette (--seal #C0492F oxblood + the color-mix derivation pattern).
+   Upstream: extracted and generalized from the apex /site/assets/tokens.css.
    Apex-only legacy aliases (--a-*, --ground, --onyx, ...) were left behind.
    Pin a tag downstream; do not edit per-subdomain.
+
+   RETIRED 2026-08-20 - the warm-ink direction (--seal #C0492F oxblood on a
+   #0C0B0A warm ground, plus the amber #E0A43A ink-mark) is no longer in use on
+   any Kinetic Gain surface. Apex itself moved onto the BERT dark-cyan palette,
+   so the skin named after apex was describing a palette that had stopped
+   existing. Both skins below now resolve to the same canonical BERT values.
+   The [data-skin] selector is kept verbatim so downstream pages that already
+   set data-skin="apex-warm-ink" keep working, and the two-skin mechanism is
+   kept so the skins can diverge again without a structural change. Oxblood and
+   the warm ground survive only in this paragraph, not in any value.
+
+   Contrast, measured against WCAG 2.x, not eyeballed. Every text token clears
+   4.5:1 on the page ground (#0B0C10), the raised panel (#1F2833), AND the
+   deeper inset (#161D26). --kg-text-faint is the tight one at 5.06:1 on the
+   panel; it replaces #5B6166, which failed at 3.12:1 on the ground and 2.37:1
+   on the panel. --kg-text-muted replaces #8A8B8C, which passed on the ground
+   (5.73:1) but failed on the panel (4.36:1). A token can pass on one surface
+   and fail on the other, so re-measure against the surface it actually sits on
+   before changing any value here.
    ============================================================================ */
 
-/* ---- skin: apex-warm-ink (default) -------------------------------------- */
+/* ---- skin: apex-warm-ink (default; warm-ink retired 2026-08-20) ---------- */
+/*      Selector name kept for downstream compatibility. Values are BERT.     */
 :root,
 [data-skin="apex-warm-ink"] {
-  --kg-bg:          #0C0B0A;            /* page ground */
-  --kg-surface:     #13110D;            /* raised panel */
-  --kg-border:      #2C2922;            /* hairline rule */
-  --kg-text:        #E9E3D6;            /* primary text (bone) */
-  --kg-text-muted:  #8E887B;            /* secondary text */
-  --kg-text-faint:  #5D584E;            /* metadata */
-  --kg-text-strong: #FFFFFF;            /* emphasis */
-  --kg-accent:      #C0492F;            /* oxblood ink-mark: links, focus, stamp */
-  --kg-accent-2:    #E0A43A;            /* amber ink-mark: status, emphasis */
-  --kg-ok:          #7E9B8E;            /* sage */
+  --kg-bg:          #0B0C10;            /* page ground */
+  --kg-surface:     #1F2833;            /* raised panel */
+  --kg-border:      #2B3A46;            /* hairline rule */
+  --kg-text:        #C5C6C7;            /* primary text          11.43:1 on bg */
+  --kg-text-muted:  #99A3AD;            /* secondary text         7.63:1 on bg */
+  --kg-text-faint:  #8C98A2;            /* metadata               6.64:1 on bg */
+  --kg-text-strong: #EAF6F5;            /* emphasis / headings   17.69:1 on bg */
+  --kg-accent:      #66FCF1;            /* cyan: links, focus, stat numbers */
+  --kg-accent-2:    #45A29E;            /* teal: solid button fills */
+  --kg-ok:          #45A29E;            /* teal */
   --kg-warn:        #E0A43A;            /* amber */
-  --kg-danger:      #C0492F;            /* oxblood */
+  --kg-danger:      #F2495C;            /* red */
 }
 
 /* ---- skin: bert-dark (operator / proof) --------------------------------- */
 [data-skin="bert-dark"] {
   --kg-bg:          #0B0C10;            /* near-black blue ground */
   --kg-surface:     #1F2833;            /* raised panel */
-  --kg-border:      rgba(102,252,241,.15); /* hairline rule (cyan-neutral) */
-  --kg-text:        #C5C6C7;            /* primary text */
-  --kg-text-muted:  #8A8B8C;            /* secondary text */
-  --kg-text-faint:  #5B6166;            /* metadata */
-  --kg-text-strong: #FFFFFF;            /* emphasis */
-  --kg-accent:      #66FCF1;            /* cyan: links, focus */
-  --kg-accent-2:    #45A29E;            /* teal: secondary */
+  --kg-border:      #2B3A46;            /* hairline rule */
+  --kg-text:        #C5C6C7;            /* primary text          11.43:1 on bg */
+  --kg-text-muted:  #99A3AD;            /* secondary text         7.63:1 on bg */
+  --kg-text-faint:  #8C98A2;            /* metadata               6.64:1 on bg */
+  --kg-text-strong: #EAF6F5;            /* emphasis / headings   17.69:1 on bg */
+  --kg-accent:      #66FCF1;            /* cyan: links, focus, stat numbers */
+  --kg-accent-2:    #45A29E;            /* teal: solid button fills */
   --kg-ok:          #45A29E;            /* teal */
-  --kg-warn:        #FFB454;            /* amber */
-  --kg-danger:      #FF6B6B;            /* coral */
+  --kg-warn:        #E0A43A;            /* amber */
+  --kg-danger:      #F2495C;            /* red */
 }
 
 /* ---- derived tokens (skin-agnostic; computed from the active --kg-accent) */
