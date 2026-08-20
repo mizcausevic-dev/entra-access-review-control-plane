@@ -1,0 +1,86 @@
+name: Build verification
+
+# BUILD ONLY. This workflow does not deploy.
+#
+# Deployment to entra.kineticgain.com is manual, over SSH/SFTP on port 65002 to
+# the Hostinger web estate. The FTP deploy step that used to live here was
+# removed 2026-08-20 for three reasons, in order of weight:
+#
+#   1. It raced the SSH path. Both wrote to the same docroot and the last writer
+#      won, with nothing surfacing the conflict. This one was workflow_dispatch
+#      only, so it was a dormant trap rather than an active race: harmless until
+#      someone clicked Run, at which point it would have quietly reverted the
+#      docroot to whatever this branch happened to build.
+#   2. FTP from shared GitHub runner IPs is unreliable against this host
+#      (control-socket timeouts traced to IP reputation; the documented fix is
+#      SSH-key SFTP on 65002, which is what the manual path already uses).
+#   3. It required live production FTP credentials in repo secrets.
+#
+# What remains still earns its place. It also closes a real gap: this repo's
+# rendered pages reference /favicon.svg, /kg-shell.js and /kg-theme-tokens.css,
+# all three of which were once present only in a gitignored working tree and
+# would have 404'd on a fresh CI checkout. The asset assertions below exist so
+# that class of bug fails the build instead of reaching production.
+
+on:
+  push:
+    branches: [main, "theme/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-entra-access-review-control-plane
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build + verify output
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run prerender
+
+      - name: Verify build output
+        run: |
+          test -f site/index.html   || (echo "FAIL: site/index.html missing" && exit 1)
+          test -f site/CNAME        || (echo "FAIL: site/CNAME missing" && exit 1)
+          test -f site/robots.txt   || (echo "FAIL: site/robots.txt missing" && exit 1)
+          test -f site/sitemap.xml  || (echo "FAIL: site/sitemap.xml missing" && exit 1)
+          echo "-- referenced static assets must actually exist (see header note) --"
+          test -f site/favicon.svg          || (echo "FAIL: site/favicon.svg missing" && exit 1)
+          test -f site/kg-shell.js          || (echo "FAIL: site/kg-shell.js missing" && exit 1)
+          test -f site/kg-theme-tokens.css  || (echo "FAIL: site/kg-theme-tokens.css missing" && exit 1)
+          grep -q "application/ld+json" site/index.html || \
+            (echo "FAIL: JSON-LD block missing" && exit 1)
+          grep -qi "#0B0C10" site/kg-theme-tokens.css || \
+            (echo "FAIL: canonical BERT ground #0B0C10 not present in tokens" && exit 1)
+          echo "OK: build verified"
+          ls -lah site/
+
+      # No deploy step, and deliberately no live-site check either. A curl
+      # against the production URL from here would report on whatever the last
+      # SSH deploy put there, not on the commit this run just built - a green
+      # check that proves nothing about this build. Verifying the artifact
+      # above is the honest boundary of what a build job can assert.
