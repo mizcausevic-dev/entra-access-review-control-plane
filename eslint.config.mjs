@@ -17,5 +17,16 @@ export default tseslint.config(
     rules: {
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }]
     }
+  },
+  {
+    // assets/ is copied into site/ and runs in the browser (kg-shell.js is a
+    // <script src> in the rendered pages), not Node - it needs browser
+    // globals (document, fetch, ...) instead of the Node ones above.
+    files: ["assets/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.browser
+      }
+    }
   }
 );

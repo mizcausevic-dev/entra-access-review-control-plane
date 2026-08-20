@@ -1,0 +1,89 @@
+/* ============================================================================
+   kg-theme-tokens.css - Kinetic Gain shared theme baseline.
+   ONE source of truth for color, type, and spacing across the estate.
+
+   Two skins, IDENTICAL variable names, switched by one attribute on <html>:
+     <html data-skin="apex-warm-ink">   brand-facing surfaces (also the default)
+     <html data-skin="bert-dark">       operator / proof surfaces
+
+   Because the names never change between skins, a subdomain swaps skins by
+   changing one attribute, and the theme gate (Task 3) checks one resolved
+   variable. Base palette values are skin-specific; everything DERIVED (tints,
+   hovers, lines) is computed once via color-mix from --kg-accent, so it adapts
+   to whichever skin is active without being redefined per skin.
+
+   Upstream: extracted and generalized from the apex /site/assets/tokens.css
+   warm-ink palette (--seal #C0492F oxblood + the color-mix derivation pattern).
+   Apex-only legacy aliases (--a-*, --ground, --onyx, ...) were left behind.
+   Pin a tag downstream; do not edit per-subdomain.
+   ============================================================================ */
+
+/* ---- skin: apex-warm-ink (default) -------------------------------------- */
+:root,
+[data-skin="apex-warm-ink"] {
+  --kg-bg:          #0C0B0A;            /* page ground */
+  --kg-surface:     #13110D;            /* raised panel */
+  --kg-border:      #2C2922;            /* hairline rule */
+  --kg-text:        #E9E3D6;            /* primary text (bone) */
+  --kg-text-muted:  #8E887B;            /* secondary text */
+  --kg-text-faint:  #5D584E;            /* metadata */
+  --kg-text-strong: #FFFFFF;            /* emphasis */
+  --kg-accent:      #C0492F;            /* oxblood ink-mark: links, focus, stamp */
+  --kg-accent-2:    #E0A43A;            /* amber ink-mark: status, emphasis */
+  --kg-ok:          #7E9B8E;            /* sage */
+  --kg-warn:        #E0A43A;            /* amber */
+  --kg-danger:      #C0492F;            /* oxblood */
+}
+
+/* ---- skin: bert-dark (operator / proof) --------------------------------- */
+[data-skin="bert-dark"] {
+  --kg-bg:          #0B0C10;            /* near-black blue ground */
+  --kg-surface:     #1F2833;            /* raised panel */
+  --kg-border:      rgba(102,252,241,.15); /* hairline rule (cyan-neutral) */
+  --kg-text:        #C5C6C7;            /* primary text */
+  --kg-text-muted:  #8A8B8C;            /* secondary text */
+  --kg-text-faint:  #5B6166;            /* metadata */
+  --kg-text-strong: #FFFFFF;            /* emphasis */
+  --kg-accent:      #66FCF1;            /* cyan: links, focus */
+  --kg-accent-2:    #45A29E;            /* teal: secondary */
+  --kg-ok:          #45A29E;            /* teal */
+  --kg-warn:        #FFB454;            /* amber */
+  --kg-danger:      #FF6B6B;            /* coral */
+}
+
+/* ---- derived tokens (skin-agnostic; computed from the active --kg-accent) */
+:root {
+  --kg-accent-soft:  color-mix(in srgb, var(--kg-accent) 14%, var(--kg-bg));            /* faint accent fill */
+  --kg-accent-line:  color-mix(in srgb, var(--kg-accent) 38%, transparent);            /* accent border */
+  --kg-accent-hover: color-mix(in srgb, var(--kg-accent) 72%, var(--kg-text-strong));  /* brighten on hover */
+  --kg-shade:        color-mix(in srgb, var(--kg-bg) 60%, #000);                       /* deeper than ground */
+
+  /* type voices (load the families separately; system fallbacks built in) */
+  --kg-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --kg-sans:  "Space Grotesk", -apple-system, system-ui, sans-serif;
+  --kg-mono:  "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* geometry + motion (hairline system: no glow, no shadow, radius <= 2px) */
+  --kg-radius:    2px;
+  --kg-maxw:      1180px;
+  --kg-maxw-read: 760px;
+  --kg-gap:       16px;
+  --kg-ease:      cubic-bezier(.22, .61, .36, 1);
+}
+
+/* ---- minimal base so loading the tokens themes the page ----------------- */
+html { color-scheme: dark; }
+body {
+  margin: 0;
+  background: var(--kg-bg);
+  color: var(--kg-text);
+  font-family: var(--kg-sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--kg-accent); text-decoration: none; }
+a:hover { color: var(--kg-accent-hover); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

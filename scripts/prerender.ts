@@ -26,6 +26,8 @@ fs.mkdirSync(outputDir, { recursive: true });
 fs.mkdirSync(path.join(outputDir, "api", "dashboard"), { recursive: true });
 fs.copyFileSync(path.join(root, "CNAME"), path.join(outputDir, "CNAME"));
 fs.copyFileSync(path.join(root, "assets", "favicon.svg"), path.join(outputDir, "favicon.svg"));
+fs.copyFileSync(path.join(root, "assets", "kg-shell.js"), path.join(outputDir, "kg-shell.js"));
+fs.copyFileSync(path.join(root, "assets", "kg-theme-tokens.css"), path.join(outputDir, "kg-theme-tokens.css"));
 
 const pages: Record<string, string> = {
   "index.html": renderOverview(),
